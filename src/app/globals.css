@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root { color-scheme: light; }
+body { @apply bg-slate-50 text-slate-800 antialiased; font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+:focus-visible { outline: 2px solid #1d77c9; outline-offset: 2px; }
+@media print { .no-print { display: none !important; } body { background: #fff; } }

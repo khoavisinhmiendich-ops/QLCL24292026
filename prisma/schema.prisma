@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  USER
+  VIEWER
+}
+
+model User {
+  id          String       @id @default(cuid())
+  username    String       @unique
+  displayName String
+  passkeyHash String
+  role        Role         @default(VIEWER)
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  moduleData  ModuleData[]
+  audit       AuditLog[]
+}
+
+// Metadata tài liệu gốc; file thật nằm ở Blob storage
+model Document {
+  id           String       @id
+  path         String       @unique
+  name         String
+  ext          String
+  type         String
+  size         Int
+  section      String
+  sectionOrder Int
+  blobUrl      String?
+  previewUrl   String?
+  updatedAt    DateTime     @updatedAt
+  moduleData   ModuleData[]
+}
+
+// Dữ liệu người dùng nhập (form/editor), tách hẳn khỏi source code
+model ModuleData {
+  id         String            @id @default(cuid())
+  userId     String
+  documentId String?
+  module     String
+  key        String            @default("main")
+  data       Json
+  version    Int               @default(1)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  user       User              @relation(fields: [userId], references: [id])
+  document   Document?         @relation(fields: [documentId], references: [id])
+  versions   DocumentVersion[]
+
+  @@unique([module, documentId, key])
+  @@index([module])
+}
+
+model DocumentVersion {
+  id           String     @id @default(cuid())
+  moduleDataId String
+  version      Int
+  data         Json
+  userId       String
+  createdAt    DateTime   @default(now())
+  moduleData   ModuleData @relation(fields: [moduleDataId], references: [id], onDelete: Cascade)
+
+  @@unique([moduleDataId, version])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  target    String?
+  meta      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+}
+
+model Backup {
+  id        String   @id @default(cuid())
+  createdBy String?
+  note      String?
+  payload   Json
+  createdAt DateTime @default(now())
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  key       String
+  ok        Boolean
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
