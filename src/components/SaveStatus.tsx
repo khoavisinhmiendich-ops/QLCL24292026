@@ -15,5 +15,5 @@ export function SaveBadge() {
   const { state, at } = useSaveStatus();
   const map = { idle: ["Đã lưu", "bg-slate-100 text-slate-600"], saving: ["Đang lưu...", "bg-amber-100 text-amber-800"], saved: [`Đã lưu lúc ${at}`, "bg-emerald-100 text-emerald-800"], offline: ["Chưa đồng bộ", "bg-orange-100 text-orange-800"], error: ["Lỗi đồng bộ", "bg-red-100 text-red-700"] } as const;
   const [label, cls] = map[state];
-  return <span role="status" aria-live="polite" className={`rounded-full px-3 py-1 text-xs font-medium ${cls}`}>{label}</span>;
+  return <span role="status" aria-live="polite" className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium ${cls}`}>{label}</span>;
 }

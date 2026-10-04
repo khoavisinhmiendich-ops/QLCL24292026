@@ -3,7 +3,7 @@ import { jwtVerify } from "jose";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  if (pathname.startsWith("/login") || pathname.startsWith("/api/auth") || pathname === "/api/health") return NextResponse.next();
+  if (pathname.startsWith("/login") || pathname.startsWith("/api/auth") || pathname.startsWith("/api/cron") || pathname === "/api/health") return NextResponse.next();
   const token = req.cookies.get("qlcl_session")?.value;
   let ok = false;
   if (token && process.env.AUTH_SECRET) {

@@ -8,11 +8,15 @@ const only = process.argv[2]; // tùy chọn: lọc theo chuỗi trong đường
 let ok = 0, fail = [];
 for (const d of index.documents.filter((x) => x.type === "word" || x.type === "excel")) {
   if (only && !d.path.includes(only)) continue;
-  const target = path.join(OUT, d.path.replace(/\.[^.]+$/, ".pdf"));
+  const target = path.join(OUT, `${d.path}.pdf`); // giữ đuôi gốc để .docx và .xlsx cùng tên không đè nhau
   if (fs.existsSync(target) && fs.statSync(target).mtimeMs >= fs.statSync(path.join(ROOT, d.path)).mtimeMs) { ok++; continue; }
   fs.mkdirSync(path.dirname(target), { recursive: true });
   try {
-    execFileSync("soffice", ["--headless", "--convert-to", "pdf", "--outdir", path.dirname(target), path.join(ROOT, d.path)], { stdio: "pipe", timeout: 120000 });
+    const tmp = fs.mkdtempSync(path.join(OUT, ".tmp-"));
+    execFileSync("soffice", ["--headless", "--convert-to", "pdf", "--outdir", tmp, path.join(ROOT, d.path)], { stdio: "pipe", timeout: 180000 });
+    const out = fs.readdirSync(tmp).find((f) => f.endsWith(".pdf"));
+    if (!out) throw new Error("no output");
+    fs.renameSync(path.join(tmp, out), target); fs.rmSync(tmp, { recursive: true, force: true });
     ok++;
   } catch (e) { fail.push(d.path); }
 }

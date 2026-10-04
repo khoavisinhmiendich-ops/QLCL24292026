@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     const u = new URL(req.url);
     const q = Key.parse({ module: u.searchParams.get("module"), documentId: u.searchParams.get("documentId"), key: u.searchParams.get("key") ?? "main" });
     const row = await db.moduleData.findFirst({ where: { module: q.module, documentId: q.documentId ?? null, key: q.key } });
-    return NextResponse.json({ data: row?.data ?? null, version: row?.version ?? 0, updatedAt: row?.updatedAt ?? null });
+    return NextResponse.json({ id: row?.id ?? null, data: row?.data ?? null, version: row?.version ?? 0, updatedAt: row?.updatedAt ?? null });
   } catch (e) { return err(e); }
 }
 

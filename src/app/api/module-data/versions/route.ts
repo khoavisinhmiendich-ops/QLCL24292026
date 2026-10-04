@@ -12,7 +12,9 @@ export async function GET(req: Request) {
     await requireRole("read");
     const id = new URL(req.url).searchParams.get("id") ?? "";
     const list = await db.documentVersion.findMany({ where: { moduleDataId: id }, orderBy: { version: "desc" }, take: 100 });
-    return NextResponse.json({ versions: list });
+    const users = await db.user.findMany({ where: { id: { in: Array.from(new Set(list.map((x) => x.userId))) } }, select: { id: true, username: true } });
+    const name = new Map(users.map((u) => [u.id, u.username]));
+    return NextResponse.json({ versions: list.map((x) => ({ version: x.version, createdAt: x.createdAt, user: name.get(x.userId) ?? "-", preview: JSON.stringify(x.data).slice(0, 120) })) });
   } catch (e) { return err(e); }
 }
 // Khôi phục = tạo version mới có nội dung của version cũ (không xóa lịch sử)

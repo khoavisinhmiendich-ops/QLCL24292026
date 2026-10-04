@@ -103,3 +103,18 @@ model LoginAttempt {
 
   @@index([key, createdAt])
 }
+
+// Bản Word/Excel đã chỉnh sửa (mỗi lần lưu là một phiên bản; bản gốc không bị thay đổi)
+model DocFile {
+  id         String   @id @default(cuid())
+  documentId String
+  version    Int
+  size       Int
+  note       String?
+  bytes      Bytes
+  userId     String
+  createdAt  DateTime @default(now())
+
+  @@unique([documentId, version])
+  @@index([documentId, createdAt])
+}
