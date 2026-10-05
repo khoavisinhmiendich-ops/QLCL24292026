@@ -24,14 +24,16 @@ async function handle(req: Request, id: string, headOnly: boolean) {
   const download = u.searchParams.get("download") === "1";
   const outName = wantPreview ? `${doc.name}.pdf` : doc.name;
   const ext = wantPreview ? "pdf" : doc.ext;
+  const fallbackOriginal = wantPreview && (doc.ext === "docx" || doc.ext === "xlsx");
   const headers: Record<string, string> = {
     "Content-Type": MIME[ext] ?? "application/octet-stream",
     "Content-Disposition": `${download ? "attachment" : "inline"}; filename*=UTF-8''${encodeURIComponent(outName)}`,
     "Cache-Control": "private, max-age=300",
   };
-  const finish = async (body: BodyInit | null) => {
+  const finish = async (body: BodyInit | null, mimeOverride?: string) => {
     if (!headOnly) await audit(s.uid, download ? "download" : "open_document", doc.path);
-    return new Response(headOnly ? null : body, { headers });
+    const finalHeaders = mimeOverride ? { ...headers, "Content-Type": mimeOverride } : headers;
+    return new Response(headOnly ? null : body, { headers: finalHeaders });
   };
 
   // 1) Chạy cục bộ (không phải Vercel): đọc thẳng từ thư mục content/ hoặc previews/
@@ -39,7 +41,7 @@ async function handle(req: Request, id: string, headOnly: boolean) {
     const root = path.resolve(process.cwd(), wantPreview ? "previews" : "content/2429.2026");
     const rel = wantPreview ? `${doc.path}.pdf` : doc.path;
     const abs = path.resolve(root, rel);
-    if (abs.startsWith(root + path.sep) && fs.existsSync(abs)) return finish(fs.readFileSync(abs));
+    if (abs.startsWith(root + path.sep) && fs.existsSync(abs)) return finish(fs.readFileSync(abs), fallbackOriginal ? MIME[doc.ext] : undefined);
   }
   // 2) Production: lấy từ kho lưu trữ (Vercel Blob) theo metadata trong database
   const rec = await db.document.findUnique({ where: { id: doc.id } }).catch(() => null);
@@ -47,7 +49,12 @@ async function handle(req: Request, id: string, headOnly: boolean) {
   if (remote) {
     const r = await fetch(remote);
     if (!r.ok || !r.body) return NextResponse.json({ error: "Không tải được file từ kho lưu trữ" }, { status: 502 });
-    return finish(r.body);
+    return finish(r.body, fallbackOriginal ? MIME[doc.ext] : undefined);
+  }
+  if (fallbackOriginal) {
+    const root = path.resolve(process.cwd(), "content/2429.2026");
+    const abs = path.resolve(root, doc.path);
+    if (abs.startsWith(root + path.sep) && fs.existsSync(abs)) return finish(fs.readFileSync(abs), MIME[doc.ext]);
   }
   return NextResponse.json({ error: "File chưa có trên máy chủ" }, { status: 404 });
 }

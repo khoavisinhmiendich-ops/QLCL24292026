@@ -1,24 +1,36 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const DISPLAY = { fontFamily: "var(--font-display), Georgia, 'Times New Roman', serif" } as const;
-const UI = { fontFamily: "var(--font-ui), 'Segoe UI', system-ui, Arial, sans-serif" } as const;
-const GRID = {
-  backgroundColor: "#0b3036",
-  backgroundImage:
-    "radial-gradient(ellipse 70% 45% at 30% 8%, rgba(94,234,212,0.18), transparent 70%)," +
-    "linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px)," +
-    "linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px)",
-  backgroundSize: "auto, 44px 44px, 44px 44px",
+const UI = {
+  fontFamily: "'Segoe UI', Inter, system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif",
 } as const;
 
-const Svg = ({ children, className = "h-4 w-4" }: { children: React.ReactNode; className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden>{children}</svg>
+const Svg = ({
+  children,
+  className = "h-5 w-5",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden
+  >
+    {children}
+  </svg>
 );
 
 export default function LoginPage() {
   const router = useRouter();
+
   const [username, setU] = useState("");
   const [passkey, setP] = useState("");
   const [show, setShow] = useState(false);
@@ -26,83 +38,490 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   async function submit(e: React.FormEvent) {
-    e.preventDefault(); setBusy(true); setErr("");
+    e.preventDefault();
+    setBusy(true);
+    setErr("");
+
     try {
-      const r = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username, passkey }) });
+      const r = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, passkey }),
+      });
+
       const j = await r.json();
-      if (!r.ok) setErr(j.error ?? "Đăng nhập thất bại"); else { router.replace("/"); router.refresh(); }
-    } catch { setErr("Không kết nối được máy chủ. Thử lại."); } finally { setBusy(false); }
+
+      if (!r.ok) {
+        setErr(j.error ?? "Đăng nhập thất bại");
+      } else {
+        router.replace("/");
+        router.refresh();
+      }
+    } catch {
+      setErr("Không kết nối được máy chủ. Thử lại.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
-    <main className="flex min-h-screen bg-[#f4f8f7] text-[#12343a]" style={UI}>
-      {/* Bên trái: giới thiệu */}
-      <section className="relative hidden w-[42%] min-w-[420px] flex-col justify-between p-10 text-white lg:flex" style={GRID}>
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-teal-200">
-            <Svg className="h-5 w-5"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.500-7-10V6l7-3z" /><path d="M9 12l2 2 4-4" /></Svg>
-          </div>
-          <div>
-            <p className="text-sm font-bold tracking-wide">HỆ THỐNG HSCL</p>
-            <p className="text-xs font-medium text-teal-300">Khoa Vi sinh – Miễn dịch</p>
-          </div>
-        </div>
+    <main
+      className="min-h-screen bg-[#f5f8fc] text-[#13263d]"
+      style={UI}
+    >
+      <div className="flex min-h-screen">
 
-        <div className="max-w-md">
-          <h1 className="text-[40px] font-semibold leading-[1.12]" style={DISPLAY}>Quản lý hồ sơ chất lượng, gọn gàng và an toàn.</h1>
-          <p className="mt-5 max-w-sm text-sm leading-relaxed text-teal-100/80">
-            Truy cập SOP, quy trình, biểu mẫu và tài liệu hướng dẫn của khoa — chỉnh sửa, lưu tự động và trích xuất PDF ngay trên trình duyệt.
-          </p>
-          <ul className="mt-8 flex gap-6 text-xs font-semibold text-teal-100">
-            <li className="flex items-center gap-1.5"><Svg className="h-3.5 w-3.5"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z" /><path d="M14 3v5h5" /></Svg>Word</li>
-            <li className="flex items-center gap-1.5"><Svg className="h-3.5 w-3.5"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M3 10h18M9 4v16" /></Svg>Excel</li>
-            <li className="flex items-center gap-1.5"><Svg className="h-3.5 w-3.5"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z" /><path d="M9 14h6M9 17h4" /></Svg>PDF</li>
-          </ul>
-        </div>
+        {/* =========================================================
+            LEFT BRAND PANEL
+        ========================================================== */}
+        <section
+          className="
+            relative hidden min-h-screen overflow-hidden
+            lg:flex lg:w-[54%] lg:flex-col
+            bg-[#09243f] text-white
+          "
+        >
+          {/* Background decoration */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -left-24 -top-24 h-[420px] w-[420px] rounded-full bg-[#1677b8]/20 blur-3xl" />
+            <div className="absolute -bottom-32 right-[-100px] h-[500px] w-[500px] rounded-full bg-[#12a6a6]/10 blur-3xl" />
 
-        <p className="text-xs font-medium text-teal-200/70">© 2026 Bệnh viện Phong – Da liễu TW Quy Hòa</p>
-      </section>
-
-      {/* Bên phải: form đăng nhập */}
-      <section className="flex flex-1 items-center justify-center p-6">
-        <form onSubmit={submit} className="w-full max-w-[400px] rounded-[28px] bg-white p-8 shadow-[0_20px_60px_-20px_rgba(15,60,66,0.25)]">
-          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-teal-200 bg-teal-50 text-teal-700">
-            <Svg className="h-5 w-5"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></Svg>
-          </div>
-          <h2 className="mt-5 text-center text-[19px] font-bold uppercase leading-snug tracking-tight text-[#0f3b40]" style={DISPLAY}>
-            Hồ sơ quản lý chất lượng<br />QĐ-2429/BYT<br />Khoa Vi sinh - Miễn dịch
-          </h2>
-          <p className="mt-2 text-center text-xs text-slate-400">Đăng nhập bằng Pass Key được cấp để tiếp tục</p>
-
-          <label htmlFor="u" className="mt-7 block text-[11px] font-bold uppercase tracking-wider text-[#12343a]">Tên đăng nhập</label>
-          <div className="relative mt-1.5">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><Svg><circle cx="12" cy="8" r="3.500" /><path d="M5 20c0-3.500 3-6 7-6s7 2.500 7 6" /></Svg></span>
-            <input id="u" value={username} onChange={(e) => setU(e.target.value)} autoComplete="username" required placeholder="Nhập tên đăng nhập"
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-10 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-teal-600 focus:bg-white focus:ring-2 focus:ring-teal-600/20" />
+            <div
+              className="absolute inset-0 opacity-[0.045]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(rgba(255,255,255,.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.8) 1px, transparent 1px)",
+                backgroundSize: "48px 48px",
+              }}
+            />
           </div>
 
-          <label htmlFor="p" className="mt-4 block text-[11px] font-bold uppercase tracking-wider text-[#12343a]">Mật khẩu (Pass Key)</label>
-          <div className="relative mt-1.5">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><Svg><circle cx="8" cy="15" r="3.500" /><path d="M10.500 12.500L19 4m-3 3l2.500 2.500M14 9l2 2" /></Svg></span>
-            <input id="p" type={show ? "text" : "password"} value={passkey} onChange={(e) => setP(e.target.value)} autoComplete="current-password" required placeholder="Nhập mật khẩu"
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-10 pr-10 text-sm outline-none transition placeholder:text-slate-400 focus:border-teal-600 focus:bg-white focus:ring-2 focus:ring-teal-600/20" />
-            <button type="button" onClick={() => setShow(!show)} aria-label={show ? "Ẩn mật khẩu" : "Hiện mật khẩu"} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-              {show ? <Svg><path d="M3 3l18 18M10.600 10.600a2 2 0 002.800 2.800M9.900 5.100A9.700 9.700 0 0112 5c5 0 8.500 4.500 9.500 7-.4 1-1.200 2.300-2.300 3.400M6.600 6.600C4.500 8 3 10.300 2.500 12c1 2.500 4.500 7 9.500 7 1.400 0 2.700-.3 3.800-.9" /></Svg>
-                : <Svg><path d="M2.500 12C3.500 9.500 7 5 12 5s8.500 4.500 9.500 7c-1 2.500-4.500 7-9.500 7s-8.500-4.500-9.500-7z" /><circle cx="12" cy="12" r="3" /></Svg>}
-            </button>
+          {/* Content */}
+          <div className="relative z-10 flex min-h-screen flex-col px-12 py-10 xl:px-16">
+
+            {/* Brand */}
+            <div className="flex items-center gap-4">
+              <div
+                className="
+                  flex h-12 w-12 items-center justify-center
+                  rounded-[14px]
+                  border border-white/15
+                  bg-[#1478b9]
+                  shadow-[0_10px_30px_rgba(0,0,0,.18)]
+                "
+              >
+                <span className="text-sm font-extrabold tracking-tight">
+                  QL
+                </span>
+              </div>
+
+              <div>
+                <div className="text-[14px] font-bold tracking-wide text-white">
+                  QUẢN LÝ CHẤT LƯỢNG
+                </div>
+
+                <div className="mt-0.5 text-[11px] font-medium text-[#8fcfe1]">
+                  Khoa Vi sinh - Miễn dịch
+                </div>
+              </div>
+            </div>
+
+            {/* Main introduction */}
+            <div className="flex flex-1 items-center">
+              <div className="max-w-[650px]">
+
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5">
+                  <span className="h-2 w-2 rounded-full bg-[#35c5c5] shadow-[0_0_12px_rgba(53,197,197,.7)]" />
+                  <span className="text-[11px] font-semibold tracking-wide text-[#b8dce6]">
+                    MEDICAL LABORATORY QUALITY SYSTEM
+                  </span>
+                </div>
+
+                <h1 className="text-[46px] font-bold leading-[1.08] tracking-[-1.5px] text-white xl:text-[54px]">
+                  Quản lý chất lượng
+                  <br />
+                  <span className="text-[#65c6d6]">
+                    2429.2026
+                  </span>
+                </h1>
+
+                <p className="mt-7 max-w-[560px] text-[15px] leading-7 text-[#b9cad8]">
+                  Hệ thống quản lý hồ sơ chất lượng dành cho phòng xét nghiệm,
+                  hỗ trợ quản lý tài liệu, biểu mẫu, dữ liệu và quy trình
+                  nghiệp vụ trên một nền tảng tập trung.
+                </p>
+
+                {/* Feature cards */}
+                <div className="mt-9 grid max-w-[610px] grid-cols-2 gap-3">
+
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-4 backdrop-blur-sm">
+                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-[#1478b9]/30 text-[#70cce1]">
+                      <Svg className="h-[18px] w-[18px]">
+                        <path d="M6 3h9l4 4v14H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+                        <path d="M14 3v5h5" />
+                        <path d="M8 12h8M8 16h6" />
+                      </Svg>
+                    </div>
+
+                    <div className="text-[13px] font-bold text-white">
+                      Quản lý tài liệu
+                    </div>
+
+                    <div className="mt-1 text-[11px] leading-5 text-[#91aabb]">
+                      Word, Excel, PDF và hồ sơ chất lượng.
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-4 backdrop-blur-sm">
+                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-[#0f9b9b]/20 text-[#64d2d2]">
+                      <Svg className="h-[18px] w-[18px]">
+                        <path d="M12 3v18" />
+                        <path d="M5 8l7-5 7 5" />
+                        <path d="M5 16l7 5 7-5" />
+                      </Svg>
+                    </div>
+
+                    <div className="text-[13px] font-bold text-white">
+                      Dữ liệu tập trung
+                    </div>
+
+                    <div className="mt-1 text-[11px] leading-5 text-[#91aabb]">
+                      Lưu trữ và quản lý dữ liệu an toàn.
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-4 backdrop-blur-sm">
+                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-[#1478b9]/30 text-[#70cce1]">
+                      <Svg className="h-[18px] w-[18px]">
+                        <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" />
+                        <path d="M9 12l2 2 4-4" />
+                      </Svg>
+                    </div>
+
+                    <div className="text-[13px] font-bold text-white">
+                      Kiểm soát truy cập
+                    </div>
+
+                    <div className="mt-1 text-[11px] leading-5 text-[#91aabb]">
+                      Phân quyền và bảo vệ thông tin hệ thống.
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-4 backdrop-blur-sm">
+                    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-[#0f9b9b]/20 text-[#64d2d2]">
+                      <Svg className="h-[18px] w-[18px]">
+                        <path d="M4 4h16v16H4z" />
+                        <path d="M8 8h8M8 12h8M8 16h5" />
+                      </Svg>
+                    </div>
+
+                    <div className="text-[13px] font-bold text-white">
+                      Xuất báo cáo
+                    </div>
+
+                    <div className="mt-1 text-[11px] leading-5 text-[#91aabb]">
+                      Hỗ trợ các biểu mẫu và báo cáo nghiệp vụ.
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-end justify-between border-t border-white/10 pt-5">
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#7892a6]">
+                  Medical Laboratory
+                </div>
+
+                <div className="mt-1 text-[11px] text-[#9bb0bf]">
+                  Khoa Vi sinh - Miễn dịch
+                </div>
+              </div>
+
+              <div className="text-right text-[10px] text-[#7892a6]">
+                © 2026
+                <br />
+                QLCL 2429.2026
+              </div>
+            </div>
+
           </div>
+        </section>
 
-          {err && <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">{err}</p>}
+        {/* =========================================================
+            RIGHT LOGIN PANEL
+        ========================================================== */}
+        <section className="flex min-h-screen flex-1 items-center justify-center px-5 py-8 sm:px-8">
 
-          <button disabled={busy} className="mt-6 h-11 w-full rounded-xl bg-[#0f3b40] text-xs font-bold uppercase tracking-widest text-white shadow-md transition hover:bg-[#0b2f34] disabled:opacity-60">
-            {busy ? "Đang đăng nhập..." : "Đăng nhập"}
-          </button>
+          <div className="w-full max-w-[450px]">
 
-          <div className="mt-6 border-t border-slate-100 pt-4 text-center text-[10px] font-semibold text-teal-700">
-            © 2026 Khoa Vi sinh - Miễn dịch, Bệnh viện Phong - Da liễu TW Quy Hòa
+            {/* Mobile brand */}
+            <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#146fb0] text-sm font-extrabold text-white shadow-lg">
+                QL
+              </div>
+
+              <div>
+                <div className="text-sm font-bold text-[#102a43]">
+                  QUẢN LÝ CHẤT LƯỢNG
+                </div>
+
+                <div className="text-[11px] text-[#6f8497]">
+                  Khoa Vi sinh - Miễn dịch
+                </div>
+              </div>
+            </div>
+
+            {/* Login Card */}
+            <form
+              onSubmit={submit}
+              className="
+                overflow-hidden rounded-[22px]
+                border border-[#dfe7ef]
+                bg-white
+                shadow-[0_24px_70px_rgba(19,50,76,.10)]
+              "
+            >
+
+              {/* Card header */}
+              <div className="border-b border-[#edf1f5] px-7 pb-6 pt-8 sm:px-9">
+
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#eaf5fb] text-[#1475b4]">
+                    <Svg className="h-[21px] w-[21px]">
+                      <rect x="5" y="10" width="14" height="10" rx="2" />
+                      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                      <circle cx="12" cy="15" r="1" />
+                    </Svg>
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#1674b1]">
+                      Secure Access
+                    </div>
+
+                    <div className="mt-0.5 text-[11px] text-[#91a0ae]">
+                      Hệ thống quản lý chất lượng
+                    </div>
+                  </div>
+                </div>
+
+                <h2 className="mt-7 text-[28px] font-bold tracking-[-.5px] text-[#102a43]">
+                  Đăng nhập
+                </h2>
+
+                <p className="mt-2 text-[13px] leading-5 text-[#728397]">
+                  Đăng nhập bằng tài khoản và Pass Key được cấp để tiếp tục.
+                </p>
+
+              </div>
+
+              {/* Form */}
+              <div className="px-7 py-7 sm:px-9">
+
+                {/* Username */}
+                <div>
+                  <label
+                    htmlFor="u"
+                    className="mb-2 block text-[12px] font-semibold text-[#30465c]"
+                  >
+                    Tên đăng nhập
+                  </label>
+
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8295a8]">
+                      <Svg className="h-[18px] w-[18px]">
+                        <circle cx="12" cy="8" r="3.5" />
+                        <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" />
+                      </Svg>
+                    </span>
+
+                    <input
+                      id="u"
+                      value={username}
+                      onChange={(e) => setU(e.target.value)}
+                      autoComplete="username"
+                      required
+                      placeholder="Nhập tên đăng nhập"
+                      className="
+                        h-[50px] w-full rounded-xl
+                        border border-[#d8e2eb]
+                        bg-[#f8fafc]
+                        pl-11 pr-4
+                        text-[13px] text-[#182d42]
+                        outline-none
+                        transition-all duration-200
+                        placeholder:text-[#a0adba]
+                        hover:border-[#b9c9d7]
+                        focus:border-[#1680bd]
+                        focus:bg-white
+                        focus:ring-4
+                        focus:ring-[#1680bd]/10
+                      "
+                    />
+                  </div>
+                </div>
+
+                {/* Pass Key */}
+                <div className="mt-5">
+                  <label
+                    htmlFor="p"
+                    className="mb-2 block text-[12px] font-semibold text-[#30465c]"
+                  >
+                    Pass Key
+                  </label>
+
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8295a8]">
+                      <Svg className="h-[18px] w-[18px]">
+                        <circle cx="8" cy="15" r="3.5" />
+                        <path d="M10.5 12.5L19 4m-3 3 2.5 2.5M14 9l2 2" />
+                      </Svg>
+                    </span>
+
+                    <input
+                      id="p"
+                      type={show ? "text" : "password"}
+                      value={passkey}
+                      onChange={(e) => setP(e.target.value)}
+                      autoComplete="current-password"
+                      required
+                      placeholder="Nhập Pass Key"
+                      className="
+                        h-[50px] w-full rounded-xl
+                        border border-[#d8e2eb]
+                        bg-[#f8fafc]
+                        pl-11 pr-12
+                        text-[13px] text-[#182d42]
+                        outline-none
+                        transition-all duration-200
+                        placeholder:text-[#a0adba]
+                        hover:border-[#b9c9d7]
+                        focus:border-[#1680bd]
+                        focus:bg-white
+                        focus:ring-4
+                        focus:ring-[#1680bd]/10
+                      "
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShow(!show)}
+                      aria-label={
+                        show ? "Ẩn mật khẩu" : "Hiện mật khẩu"
+                      }
+                      className="
+                        absolute right-3 top-1/2
+                        -translate-y-1/2
+                        rounded-lg p-1.5
+                        text-[#8295a8]
+                        transition
+                        hover:bg-[#edf4f8]
+                        hover:text-[#35627d]
+                      "
+                    >
+                      {show ? (
+                        <Svg className="h-[18px] w-[18px]">
+                          <path d="M3 3l18 18" />
+                          <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                          <path d="M9.9 5.1A9.7 9.7 0 0 1 12 5c5 0 8.5 4.5 9.5 7-.4 1-1.2 2.3-2.3 3.4" />
+                          <path d="M6.6 6.6C4.5 8 3 10.3 2.5 12c1 2.5 4.5 7 9.5 7 1.4 0 2.7-.3 3.8-.9" />
+                        </Svg>
+                      ) : (
+                        <Svg className="h-[18px] w-[18px]">
+                          <path d="M2.5 12C3.5 9.5 7 5 12 5s8.5 4.5 9.5 7c-1 2.5-4.5 7-9.5 7s-8.5-4.5-9.5-7z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </Svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Error */}
+                {err && (
+                  <div
+                    role="alert"
+                    className="
+                      mt-4 flex items-start gap-2.5
+                      rounded-xl border border-red-100
+                      bg-red-50 px-3.5 py-3
+                      text-[12px] leading-5 text-red-700
+                    "
+                  >
+                    <Svg className="mt-0.5 h-4 w-4 shrink-0">
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 8v5M12 16h.01" />
+                    </Svg>
+
+                    <span>{err}</span>
+                  </div>
+                )}
+
+                {/* Login button */}
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="
+                    mt-6 flex h-[50px] w-full
+                    items-center justify-center
+                    rounded-xl
+                    bg-[#126fb0]
+                    text-[13px] font-bold
+                    tracking-wide text-white
+                    shadow-[0_8px_20px_rgba(18,111,176,.20)]
+                    transition-all duration-200
+                    hover:bg-[#0d609b]
+                    hover:shadow-[0_10px_25px_rgba(18,111,176,.25)]
+                    active:scale-[.99]
+                    disabled:cursor-not-allowed
+                    disabled:opacity-60
+                    disabled:shadow-none
+                  "
+                >
+                  {busy ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      Đang đăng nhập...
+                    </span>
+                  ) : (
+                    <>
+                      Đăng nhập
+                      <Svg className="ml-2 h-4 w-4">
+                        <path d="M5 12h14" />
+                        <path d="m13 6 6 6-6 6" />
+                      </Svg>
+                    </>
+                  )}
+                </button>
+
+              </div>
+
+              {/* Footer */}
+              <div className="border-t border-[#edf1f5] bg-[#fbfcfd] px-7 py-4 text-center sm:px-9">
+                <div className="text-[10px] font-medium leading-5 text-[#8393a2]">
+                  © 2026 Khoa Vi sinh - Miễn dịch
+                  <span className="mx-1.5 text-[#c3cbd2]">•</span>
+                  Bệnh viện Phong - Da liễu TW Quy Hòa
+                </div>
+              </div>
+
+            </form>
+
+            {/* Security note */}
+            <div className="mt-5 flex items-center justify-center gap-2 text-[10px] text-[#8999a8]">
+              <Svg className="h-3.5 w-3.5">
+                <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z" />
+                <path d="M9 12l2 2 4-4" />
+              </Svg>
+
+              <span>Truy cập được bảo vệ bằng xác thực tài khoản</span>
+            </div>
+
           </div>
-        </form>
-      </section>
+        </section>
+      </div>
     </main>
   );
 }
